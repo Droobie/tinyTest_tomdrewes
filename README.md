@@ -1,4 +1,7 @@
-tinyTest_tomdrewes
+tinyTest
 ==================
+Javascript tests!
 
-javascript tests
+## Todo:
+	* Add money (Tom)
+	* Make it work (Drewes)
