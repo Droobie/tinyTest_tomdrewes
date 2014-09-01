@@ -74,6 +74,7 @@ function onMouseDown(e) {
 	//check if click on new etage button
 	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y && oT < etageButton.Y+30) {
 		setEtage();
+		moneyHandler.subtract("boughtFloor");
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
@@ -154,6 +155,8 @@ var Person = function() {
 		if(this.xDest < this.X) this.speed = -1
 		else this.speed = 1;
 		this.newDestSet = false;
+
+		moneyHandler.add("floorProfit"); // Temporary! Move it when correct game mechanic is available.
 	}
 	this.enterElevator = function() {
 		this.inElevator = true;
@@ -286,7 +289,7 @@ var MoneyHandler = function(){
 		ctx.fillText("Cash: "+moneyAmount, 10, 20);
 	}
 	this.add = function(kindOfAddition){
-		console.log('moneyHandler.add called: ' + moneyAmount);
+		// console.log('moneyHandler.add called: ' + moneyAmount);
 
 		switch (kindOfAddition){
 			case "elevatorTip":
@@ -295,6 +298,7 @@ var MoneyHandler = function(){
 				break;
 			case "floorProfit":
 				// profit made from the stocked and active floors
+				moneyAmount += this.giveMeRandom(1,6);
 				break;
 
 			default:
@@ -302,7 +306,7 @@ var MoneyHandler = function(){
 		}
 	}
 	this.subtract = function(kindOfSubtraction){
-		console.log('moneyHandler.subtract called');
+		// console.log('moneyHandler.subtract called');
 
 		switch (kindOfSubtraction){
 			case "boughtFloor":
@@ -320,6 +324,10 @@ var MoneyHandler = function(){
 		if(balance < 0){
 			// game over?
 		}
+	}
+	// generates random number
+	this.giveMeRandom = function(min, max) {
+		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 };
 
