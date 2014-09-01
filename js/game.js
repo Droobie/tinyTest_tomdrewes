@@ -11,8 +11,10 @@ var	 width = 1024,
 	 elevatorButtons = [],
 	 personArr = [],
 	 money = 1000,
- 	 canv = document.getElementById('canv'), 
-	 ctx = canv.getContext('2d');
+ 	 canv = document.getElementById('canv'),
+	 ctx = canv.getContext('2d'),
+	 moneyHandler,
+	 moneyAmount = 0;
 canv.width = width;
 canv.height = height;
 
@@ -44,6 +46,9 @@ var gameLoop = function()
 		person.setPosition();
 		person.draw();
 	});
+
+	// show amount of money
+	moneyHandler.draw();
 }
 
 function createLevel() {
@@ -52,9 +57,10 @@ function createLevel() {
 	elevatorButtons.push(new ElevatorButton(false), new ElevatorButton(true))
 	setEtage();
 
+	moneyHandler = new MoneyHandler();
+
 	//temporary at start, needs to be at random later => 3 seconds to give us time to build some etages
 	setTimeout(function() { spawnPerson(); }, 3000)
-	
 }
 
 function setEvents() {
@@ -137,10 +143,10 @@ var Person = function() {
 			if(this.X == this.xDest && !this.newDestSet) {
 				this.newDestSet = true;
 				this.speed = 0;
-				setTimeout(function() { self.getNewDestination(); }, 3000);				
+				setTimeout(function() { self.getNewDestination(); }, 3000);
 			} else {
 				this.X += this.speed;
-			} 
+			}
 		}
 	}
 	this.getNewDestination = function() {
@@ -189,7 +195,7 @@ var Elevator = function() {
 					this.Y -= this.speed;
 				else
 					this.Y += this.speed;
-				
+
 				//You can't go lower then ground level #doh
 				if(this.Y+etageHeight > height) this.Y = height-etageHeight;
 				//You cant go higher then the highest level #doh
@@ -207,6 +213,8 @@ var Elevator = function() {
 							self.currentEtage = etage;
 							if(self.isPopulated)
 								self.checkPerson();
+
+							moneyHandler.add("elevatorTip");
 						}
 						if(self.isSnapping) {
 							self.speed -= 0.015; //needs tweaking for easing
@@ -268,6 +276,52 @@ var EtageButton = function() {
 		this.Y = height-(totalEtages*etageHeight)-50;
 	}
 }
+
+// keeps track of the amount of money the player has
+var MoneyHandler = function(){
+
+	this.draw = function(){
+		ctx.fillStyle = "black";
+		ctx.font = "bold 16px Arial";
+		ctx.fillText("Cash: "+moneyAmount, 10, 20);
+	}
+	this.add = function(kindOfAddition){
+		console.log('moneyHandler.add called: ' + moneyAmount);
+
+		switch (kindOfAddition){
+			case "elevatorTip":
+				// tips the player gets from bringing people to the right floor
+				moneyAmount += 10;
+				break;
+			case "floorProfit":
+				// profit made from the stocked and active floors
+				break;
+
+			default:
+				console.warn('Er gaat iets mis met moneyHandler.add!');
+		}
+	}
+	this.subtract = function(kindOfSubtraction){
+		console.log('moneyHandler.subtract called');
+
+		switch (kindOfSubtraction){
+			case "boughtFloor":
+				moneyAmount -= 1000;
+				break;
+			case "thieves":
+
+				break;
+
+			default:
+				console.warn('Er gaat iets mis met moneyHandler.subtract!');
+		}
+	}
+	this.checkBalance = function(balance){
+		if(balance < 0){
+			// game over?
+		}
+	}
+};
 
 var clear = function()
 {
