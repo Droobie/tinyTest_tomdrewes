@@ -94,7 +94,7 @@ function onMouseDown(e) {
 		setEtage();
 
 		var etageCost = 100 * totalEtages;
-		moneyHandler.subtract(etageCost);
+		moneyHandler.changeAmount(-etageCost);
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
@@ -206,7 +206,7 @@ var Person = function() {
 		else this.speed = 1;
 		this.newDestSet = false;
 
-		moneyHandler.add("floorProfit"); // Temporary! Move it when correct game mechanic is available.
+		moneyHandler.changeAmount(giveMeRandom(1, 6))
 	}
 	this.enterElevator = function() {
 		this.inElevator = true;
@@ -274,8 +274,7 @@ var Elevator = function() {
 							self.currentEtage = etage;
 							if(self.isPopulated)
 								self.checkPerson();
-
-							moneyHandler.add("elevatorTip");
+							moneyHandler.changeAmount(self.currentEtage.etageNum);
 						}
 						if(self.isSnapping) {
 							self.speed -= 0.015; //needs tweaking for easing
@@ -340,38 +339,19 @@ var EtageButton = function() {
 
 // keeps track of the amount of money the player has
 var MoneyHandler = function(){
-
 	this.draw = function(){
 		ctx.fillStyle = "black";
 		ctx.font = "bold 16px Arial";
 		ctx.fillText("Cash: "+moneyAmount, 10, 20);
 	}
-	this.add = function(kindOfAddition){
-		switch (kindOfAddition){
-			case "elevatorTip":
-				// tips the player gets from bringing people to the right floor
-				moneyAmount += 10;
-				break;
-			case "floorProfit":
-				// profit made from the stocked and active floors
-				moneyAmount += this.giveMeRandom(1,6);
-				break;
-
-			default:
-				console.warn('Er gaat iets mis met moneyHandler.add!');
-		}
-	}
-	this.subtract = function(amount){
-		moneyAmount -= amount;
+	this.changeAmount = function(amount) {
+		moneyAmount += amount;
+		console.log('money changed by: ' + amount)
 	}
 	this.checkBalance = function(balance){
 		if(balance < 0){
 			// game over?
 		}
-	}
-	// generates random number
-	this.giveMeRandom = function(min, max) {
-		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 };
 
@@ -385,6 +365,9 @@ var clear = function()
 }
 
 //temporary
+function giveMeRandom (min, max) {
+	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 function getRandomColor() {
     var letters = '0123456789ABCDEF'.split('');
     var color = '#';
