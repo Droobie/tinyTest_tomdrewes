@@ -37,6 +37,7 @@ function init()
 var gameLoop = function()
 {
 	clear();
+	background.draw();
 	etageArr.forEach(function(etage) {
 		etage.draw();
 	});
@@ -56,6 +57,7 @@ var gameLoop = function()
 }
 
 function createLevel() {
+	background = new Background();
 	etageButton = new EtageButton();
 	elevator = new Elevator();
 	elevatorButtons.push(new ElevatorButton(false), new ElevatorButton(true))
@@ -77,12 +79,9 @@ function onMouseMove(e) {
 	if(mouseDown) {
 		var oL = e.pageX-$(canv).offset().left; //make vars here for readability
 		var oT = e.pageY-$(canv).offset().top;
-		//screenPosX += (mouseDownPos[0] - oL);
 		screenPosY += (mouseDownPos[1] - oT);
-		// console.log(screenPosY)
 		mouseDownPos = [oL, oT];
 		if(screenPosY+height > height) screenPosY = 0;
-		//if(screenPosY+height > maxLevelSize[1]*curZoom) screenPosY = (maxLevelSize[1]*curZoom)-height;
 	}
 }
 function onMouseDown(e) {
@@ -118,6 +117,29 @@ function onMouseUp(e) {
 		}
 	});
 	mouseDown = false;
+}
+
+var Background = function() {
+	this.calculateColor = function() {
+		var towerHeight = totalEtages * etageHeight;
+		if(towerHeight < height) towerHeight = height;
+		towerHeight = towerHeight/255;
+		var b = parseInt(parseInt(-screenPosY / towerHeight,10)/2);
+		if(b > 255) b = 255;
+		if(String(b).length === 1) b = "0"+b;
+		var r = parseInt(124-(b/2));
+		if(String(r).length === 1) r = "0"+r;
+		var g = parseInt(124-(b/2));
+		if(String(g).length === 1) g = "0"+g;
+		return "rgb("+r+","+g+","+b+")";
+	}
+	this.draw = function() {
+		ctx.fillStyle = this.calculateColor();
+		ctx.beginPath();
+		ctx.rect(0, 0, width, height);
+		ctx.closePath();
+		ctx.fill();
+	}
 }
 
 function setEtage() {
