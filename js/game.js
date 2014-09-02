@@ -6,6 +6,12 @@ var	 width = 1024,
 	 gLoop,
 	 etageHeight = 75,
 	 totalEtages = 0,
+	 etageCategories = [
+	 					['leisure', ['fitness', 'swimming', 'welness']],
+	 					['shops', ['clothing', 'shoes', 'electronics']],
+	 					['services', ['cleaning', 'police', 'hospital']],
+	 					['food', ['burgers', 'drinks', 'chinese']]
+	 				   ],
 	 etageArr = [],
 	 etageButton,
 	 elevator,
@@ -16,7 +22,6 @@ var	 width = 1024,
  	 canv = document.getElementById('canv'),
 	 ctx = canv.getContext('2d'),
 	 moneyHandler,
-	 moneyAmount = 0,
 	 mouseDown = false,
 	 mouseDownPos = [];
 canv.width = width;
@@ -92,10 +97,11 @@ function onMouseDown(e) {
 	//check if click on new etage button
 	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y-screenPosY && oT < etageButton.Y+30-screenPosY) {
 		clickFound = true;
-		setEtage();
-		var etageCost = 100 * totalEtages;
-		moneyHandler.changeAmount(-etageCost);
-
+		if(moneyHandler.checkBalance() > 100 * totalEtages) {
+			setEtage();
+			var etageCost = 100 * totalEtages;
+			moneyHandler.changeAmount(-etageCost);
+		}
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
@@ -206,7 +212,6 @@ var Person = function() {
 		if(this.xDest < this.X) this.speed = -1
 		else this.speed = 1;
 		this.newDestSet = false;
-
 		moneyHandler.changeAmount(giveMeRandom(1, 6))
 	}
 	this.enterElevator = function() {
@@ -283,11 +288,16 @@ var Elevator = function() {
 						}
 					}
 				});
+
 				if(this.isSnapping) {
 					if(this.goingUp)
 						this.Y -= this.speed;
 					else
 						this.Y += this.speed;
+					//You can't go lower then ground level #doh
+					if(this.Y+etageHeight > height) this.Y = height-etageHeight;
+					//You cant go higher then the highest level #doh
+					if(this.Y <  height-(totalEtages*etageHeight)) this.Y = height-(totalEtages*etageHeight);
 				}
 			}
 		} else if(this.Y == height-etageHeight) {
@@ -346,19 +356,17 @@ var EtageButton = function() {
 
 // keeps track of the amount of money the player has
 var MoneyHandler = function(){
+	this.moneyAmount = 1000;
 	this.draw = function(){
 		ctx.fillStyle = "black";
 		ctx.font = "bold 16px Arial";
-		ctx.fillText("Cash: "+moneyAmount, 10, 20);
+		ctx.fillText("Cash: "+this.moneyAmount, 10, 20);
 	}
 	this.changeAmount = function(amount) {
-		moneyAmount += amount;
-		console.log('money changed by: ' + amount)
+		this.moneyAmount += amount;
 	}
 	this.checkBalance = function(balance){
-		if(balance < 0){
-			// game over?
-		}
+		return this.moneyAmount;
 	}
 };
 
