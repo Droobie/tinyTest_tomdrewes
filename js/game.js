@@ -92,7 +92,9 @@ function onMouseDown(e) {
 	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y-screenPosY && oT < etageButton.Y+30-screenPosY) {
 		clickFound = true;
 		setEtage();
-		moneyHandler.subtract("boughtFloor");
+
+		var etageCost = 100 * totalEtages;
+		moneyHandler.subtract(etageCost);
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
@@ -253,7 +255,7 @@ var Elevator = function() {
 						screenPosY += this.speed;
 					}
 					if(screenPosY+height > height) screenPosY = 0;
-				}			
+				}
 
 				//You can't go lower then ground level #doh
 				if(this.Y+etageHeight > height) this.Y = height-etageHeight;
@@ -345,8 +347,6 @@ var MoneyHandler = function(){
 		ctx.fillText("Cash: "+moneyAmount, 10, 20);
 	}
 	this.add = function(kindOfAddition){
-		// console.log('moneyHandler.add called: ' + moneyAmount);
-
 		switch (kindOfAddition){
 			case "elevatorTip":
 				// tips the player gets from bringing people to the right floor
@@ -361,20 +361,8 @@ var MoneyHandler = function(){
 				console.warn('Er gaat iets mis met moneyHandler.add!');
 		}
 	}
-	this.subtract = function(kindOfSubtraction){
-		// console.log('moneyHandler.subtract called');
-
-		switch (kindOfSubtraction){
-			case "boughtFloor":
-				moneyAmount -= 1000;
-				break;
-			case "thieves":
-
-				break;
-
-			default:
-				console.warn('Er gaat iets mis met moneyHandler.subtract!');
-		}
+	this.subtract = function(amount){
+		moneyAmount -= amount;
 	}
 	this.checkBalance = function(balance){
 		if(balance < 0){
