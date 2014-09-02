@@ -90,7 +90,7 @@ function onMouseDown(e) {
 	var oT = e.pageY-$(canv).offset().top;
 	var clickFound = false;
 	//check if click on new etage button
-	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y && oT < etageButton.Y+30) {
+	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y-screenPosY && oT < etageButton.Y+30-screenPosY) {
 		clickFound = true;
 		setEtage();
 		moneyHandler.subtract("boughtFloor");
@@ -220,10 +220,18 @@ var Elevator = function() {
 		if(this.isMoving) {
 			if(!this.isSnapping) {
 				//The elevator is moving normally, just keep going!
-				if(this.goingUp)
+				if(this.goingUp) {
 					this.Y -= this.speed;
-				else
+					if(this.Y < height/2) {
+						screenPosY -= this.speed;
+					}
+				} else {
 					this.Y += this.speed;
+					if(this.Y > height/4) {
+						screenPosY += this.speed;
+					}
+					if(screenPosY+height > height) screenPosY = 0;
+				}			
 
 				//You can't go lower then ground level #doh
 				if(this.Y+etageHeight > height) this.Y = height-etageHeight;
