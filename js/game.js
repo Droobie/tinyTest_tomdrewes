@@ -41,6 +41,7 @@ var gameLoop = function()
 	etageArr.forEach(function(etage) {
 		etage.draw();
 	});
+
 	etageButton.draw();
 	elevator.move();
 	elevator.draw();
@@ -93,8 +94,7 @@ function onMouseDown(e) {
 		clickFound = true;
 		setEtage();
 
-		var etageCost = 100 * totalEtages;
-		moneyHandler.subtract(etageCost);
+		moneyHandler.subtract(100 * totalEtages);
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
@@ -327,11 +327,17 @@ var EtageButton = function() {
 	this.X = (width/2) - 75;
 	this.Y = 0;
 	this.draw = function() {
+		// draw button
 		ctx.fillStyle = '#000000';
 		ctx.beginPath();
 		ctx.rect(this.X, this.Y-screenPosY, 150, 30);
 		ctx.closePath();
 		ctx.fill();
+
+		// draw button text
+		ctx.fillStyle = "white";
+		ctx.font = "bold 16px Arial";
+		ctx.fillText("Needed: "+ 100 * totalEtages, this.X + 30, this.Y-screenPosY + 20);
 	}
 	this.setNewPosition = function() {
 		this.Y = height-(totalEtages*etageHeight)-50;
@@ -340,7 +346,6 @@ var EtageButton = function() {
 
 // keeps track of the amount of money the player has
 var MoneyHandler = function(){
-
 	this.draw = function(){
 		ctx.fillStyle = "black";
 		ctx.font = "bold 16px Arial";
