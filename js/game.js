@@ -1,5 +1,7 @@
 var	 width = 1024,
  	 height = 600,
+ 	 screenPosX = 0,
+ 	 screenPosY = 0,
  	 towerWidth = 350,
 	 gLoop,
 	 etageHeight = 75,
@@ -14,7 +16,9 @@ var	 width = 1024,
  	 canv = document.getElementById('canv'),
 	 ctx = canv.getContext('2d'),
 	 moneyHandler,
-	 moneyAmount = 0;
+	 moneyAmount = 0,
+	 mouseDown = false,
+	 mouseDownPos = [];
 canv.width = width;
 canv.height = height;
 
@@ -66,24 +70,44 @@ function createLevel() {
 function setEvents() {
 	canv.addEventListener('mousedown', onMouseDown);
 	canv.addEventListener('mouseup', onMouseUp);
+	canv.addEventListener('mousemove', onMouseMove);
 }
 
+function onMouseMove(e) {
+	if(mouseDown) {
+		var oL = e.pageX-$(canv).offset().left; //make vars here for readability
+		var oT = e.pageY-$(canv).offset().top;
+		//screenPosX += (mouseDownPos[0] - oL);
+		screenPosY += (mouseDownPos[1] - oT);
+		// console.log(screenPosY)
+		mouseDownPos = [oL, oT];
+		if(screenPosY+height > height) screenPosY = 0;
+		//if(screenPosY+height > maxLevelSize[1]*curZoom) screenPosY = (maxLevelSize[1]*curZoom)-height;
+	}
+}
 function onMouseDown(e) {
 	var oL = e.pageX-$(canv).offset().left; //make vars here for readability
 	var oT = e.pageY-$(canv).offset().top;
+	var clickFound = false;
 	//check if click on new etage button
 	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y && oT < etageButton.Y+30) {
+		clickFound = true;
 		setEtage();
 		moneyHandler.subtract("boughtFloor");
 	}
 	elevatorButtons.forEach(function(button) {
 		if(oL > button.X && oL < button.X + 50 && oT > button.Y && oT < button.Y+50) {
+			clickFound = true;
 			elevator.isMoving = true;
 			elevator.goingUp = button.isUp;
 			elevator.speed = 2;
 			elevator.isSnapping = false;
 		}
 	});
+	if(!clickFound) {
+		mouseDown = true;
+		mouseDownPos = [oL, oT];
+	}
 }
 function onMouseUp(e) {
 	var oL = e.pageX-$(canv).offset().left; //make vars here for readability
@@ -93,6 +117,7 @@ function onMouseUp(e) {
 			elevator.isSnapping = true;
 		}
 	});
+	mouseDown = false;
 }
 
 function setEtage() {
@@ -108,9 +133,10 @@ var Etage = function() {
 	this.Y = height-(this.etageNum*etageHeight);
 	this.draw = function() {
 		//draw the sprite here instead
+		//console.log(this.Y-screenPosY)
 		ctx.fillStyle = this.color;
 		ctx.beginPath();
-		ctx.rect(this.X, this.Y, towerWidth, etageHeight);
+		ctx.rect(this.X, this.Y-screenPosY, towerWidth, etageHeight);
 		ctx.closePath();
 		ctx.fill();
 	}
@@ -131,7 +157,7 @@ var Person = function() {
 	this.draw = function() {
 		ctx.fillStyle = this.color;
 		ctx.beginPath();
-		ctx.rect(this.X, this.Y, 25, 50);
+		ctx.rect(this.X, this.Y-screenPosY, 25, 50);
 		ctx.closePath();
 		ctx.fill();
 	}
@@ -186,7 +212,7 @@ var Elevator = function() {
 	this.draw = function() {
 		ctx.fillStyle = '#FF0000';
 		ctx.beginPath();
-		ctx.rect(this.X, this.Y, elevatorWidth, etageHeight);
+		ctx.rect(this.X, this.Y-screenPosY, elevatorWidth, etageHeight);
 		ctx.closePath();
 		ctx.fill();
 	}
@@ -207,8 +233,8 @@ var Elevator = function() {
 				var self = this;
 				etageArr.forEach(function(etage) {
 					//something is going wrong here, he takes one etage higher then expected
-					if(etage.Y < self.Y && self.goingUp || etage.Y > self.Y && !self.goingUp) {
-						if(self.Y-2 < etage.Y && self.Y+2 > etage.Y) {
+					if(etage.Y-screenPosY < self.Y-screenPosY && self.goingUp || etage.Y-screenPosY > self.Y-screenPosY && !self.goingUp) {
+						if(self.Y-screenPosY-2 < etage.Y-screenPosY && self.Y-screenPosY+2 > etage.Y-screenPosY) {
 							self.Y = etage.Y;
 							self.isSnapping = false;
 							self.isMoving = false;
@@ -271,7 +297,7 @@ var EtageButton = function() {
 	this.draw = function() {
 		ctx.fillStyle = '#000000';
 		ctx.beginPath();
-		ctx.rect(this.X, this.Y, 150, 30);
+		ctx.rect(this.X, this.Y-screenPosY, 150, 30);
 		ctx.closePath();
 		ctx.fill();
 	}
