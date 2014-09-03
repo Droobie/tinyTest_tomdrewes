@@ -223,9 +223,18 @@ var Person = function() {
 	this.inEtage = false;
 
 	this.draw = function() {
+		// face
+		// ctx.fillStyle = this.color;
+		ctx.fillStyle = "#e6b6bf"; // pink-ish
+		ctx.beginPath();
+		ctx.rect(this.X, this.Y-screenPosY, 25, 20);
+		ctx.closePath();
+		ctx.fill();
+
+		// body
 		ctx.fillStyle = this.color;
 		ctx.beginPath();
-		ctx.rect(this.X, this.Y-screenPosY, 25, 50);
+		ctx.rect(this.X, this.Y-screenPosY + 20, 25, 30);
 		ctx.closePath();
 		ctx.fill();
 	}
@@ -393,7 +402,7 @@ var EtageButton = function() {
 
 // keeps track of the amount of money the player has
 var MoneyHandler = function(){
-	this.moneyAmount = 1000;
+	this.moneyAmount = 100000;
 	this.draw = function(){
 		ctx.fillStyle = "black";
 		ctx.font = "bold 16px Arial";
