@@ -7,7 +7,7 @@ var	 width = 1024,
 	 etageHeight = 75,
 	 totalEtages = 0,
 	 etageCategories = [
-	 					['leisure', ['fitness', 'swimming', 'welness']],
+	 					['leisure', ['fitness', 'swimming', 'wellness']],
 	 					['shops', ['clothing', 'shoes', 'electronics']],
 	 					['services', ['cleaning', 'police', 'hospital']],
 	 					['food', ['burgers', 'drinks', 'chinese']]
@@ -162,14 +162,51 @@ var Etage = function() {
 	this.etageNum = totalEtages;
 	this.X = (width/2) - (towerWidth/2);
 	this.Y = height-(this.etageNum*etageHeight);
+	this.category = etageCategories[giveMeRandom(0,3)][1][giveMeRandom(0,2)];
+
+	this.getCorrectImage = function(){
+		switch(this.category){
+			case "shoes":
+				console.info('this floor is of the type shoes: ' + this.category);
+				return "brown";
+				break;
+			case "wellness":
+				console.info('this floor is of the type wellness: ' + this.category);
+				return "hotpink";
+				break;
+			case "police":
+				console.info('this floor is of the type police: ' + this.category);
+				return "blue";
+				break;
+
+			default:
+				return this.color;
+		}
+	}
+	this.floorImage = this.getCorrectImage();
+
 	this.draw = function() {
 		//draw the sprite here instead
 		//console.log(this.Y-screenPosY)
-		ctx.fillStyle = this.color;
+
+		// ctx.fillStyle = this.color;
+		ctx.fillStyle = this.floorImage;
+
 		ctx.beginPath();
 		ctx.rect(this.X, this.Y-screenPosY, towerWidth, etageHeight);
 		ctx.closePath();
 		ctx.fill();
+
+		// add textbar
+		ctx.fillStyle = "#333";
+		ctx.beginPath();
+		ctx.rect(this.X, this.Y-screenPosY, towerWidth, 20);
+		ctx.closePath();
+		ctx.fill();
+		// add text
+		ctx.fillStyle = "white";
+		ctx.font = "bold 12px Arial";
+		ctx.fillText(this.category, this.X +7, this.Y-screenPosY +13);
 	}
 }
 var Person = function() {
