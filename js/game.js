@@ -24,26 +24,25 @@ var	 width = 1024,
 	 moneyHandler,
 	 mouseDown = false,
 	 mouseDownPos = [];
-canv.width = width;
-canv.height = height;
+	 canv.width;
+	 canv.height;
 
 $(document).ready(function()
-{
-	width = $(window).width();
-	height = $(window).height();
-	canv.width = width;
-	canv.height = height;
+{	
 	init();
 });
 
 function init()
 {
-	console.log(width, height)
+	getSizes();
 	createLevel();
 	setEvents();
 	gLoop = setInterval( gameLoop, 1000/50 );
 }
-
+function getSizes() {
+	canv.width = width = $(window).width();
+	canv.height = height = $(window).height();
+}
 var gameLoop = function()
 {
 	clear();
@@ -84,6 +83,11 @@ function setEvents() {
 	canv.addEventListener('mousedown', onMouseDown);
 	canv.addEventListener('mouseup', onMouseUp);
 	canv.addEventListener('mousemove', onMouseMove);
+	// window.addEventListener('resize', onWindowResize);
+}
+
+function onWindowResize() {
+	getSizes();
 }
 
 function onMouseMove(e) {
@@ -196,11 +200,20 @@ var Etage = function() {
 
 		// ctx.fillStyle = this.color;
 		ctx.fillStyle = this.floorImage;
-
 		ctx.beginPath();
 		ctx.rect(this.X, this.Y-screenPosY, towerWidth, etageHeight);
 		ctx.closePath();
 		ctx.fill();
+
+		//add etagenumber
+		ctx.fillStyle = "#333";
+		ctx.beginPath();
+		ctx.rect(this.X+10, this.Y-screenPosY+30, etageHeight-40, etageHeight-40);
+		ctx.closePath();
+		ctx.fill();
+		ctx.fillStyle = "white";
+		ctx.font = "bold 20px Arial";
+		ctx.fillText(this.etageNum, this.X+21, this.Y-screenPosY +55);
 
 		// add textbar
 		ctx.fillStyle = "#333";
@@ -222,8 +235,6 @@ var Person = function() {
 	this.xDest = 0;
 	this.newDestSet = false;
 	this.wantedEtage = (Math.ceil(Math.random()*(totalEtages-1)))+1; //+1 so bottom level is excluded
-	//keep this log, else you don't know where they want to go
-	console.log('i want to go to:' + this.wantedEtage);
 	this.inElevator = false;
 	this.inEtage = false;
 
@@ -241,6 +252,18 @@ var Person = function() {
 		ctx.rect(this.X, this.Y-screenPosY + 20, 25, 30);
 		ctx.closePath();
 		ctx.fill();
+
+		//num
+		if(!this.inEtage) {
+			ctx.fillStyle = "#333";
+			ctx.beginPath();
+			ctx.rect(this.X+3, this.Y-screenPosY+25, 20, 20);
+			ctx.closePath();
+			ctx.fill();
+			ctx.fillStyle = "white";
+			ctx.font = "bold 16px Arial";
+			ctx.fillText(this.wantedEtage, this.X+8, this.Y-screenPosY+42);
+		}
 	}
 	this.setPosition = function() {
 		var self = this;
