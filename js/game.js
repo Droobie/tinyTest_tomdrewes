@@ -29,11 +29,16 @@ canv.height = height;
 
 $(document).ready(function()
 {
-   init();
+	width = $(window).width();
+	height = $(window).height();
+	canv.width = width;
+	canv.height = height;
+	init();
 });
 
 function init()
 {
+	console.log(width, height)
 	createLevel();
 	setEvents();
 	gLoop = setInterval( gameLoop, 1000/50 );
@@ -224,7 +229,6 @@ var Person = function() {
 
 	this.draw = function() {
 		// face
-		// ctx.fillStyle = this.color;
 		ctx.fillStyle = "#e6b6bf"; // pink-ish
 		ctx.beginPath();
 		ctx.rect(this.X, this.Y-screenPosY, 25, 20);
