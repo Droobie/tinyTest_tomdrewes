@@ -23,17 +23,17 @@ var	 width = 1024,
 	 canv.width;
 	 canv.height;
 $(document).ready(function()
-{	
+{
 	//before we do anything, get the data of the current user
 	getUserData();
-	
+
 });
 window.onbeforeunload = function() {
     saveData();
     return "asd";
 }
 function saveData() {
-	
+
 }
 function getUserData() {
 	$.ajax({
@@ -271,13 +271,14 @@ var Person = function() {
 	this.inElevator = false;
 	this.inEtage = false;
 
+	this.faceArr = [0,20,40,60,80];
+	this.currentFace = this.faceArr[giveMeRandom(0,4)];
+
 	this.draw = function() {
 		// face
-		ctx.fillStyle = "#e6b6bf"; // pink-ish
-		ctx.beginPath();
-		ctx.rect(this.X, this.Y-screenPosY, 25, 20);
-		ctx.closePath();
-		ctx.fill();
+		this.image = new Image();
+		this.image.src = 'img/sprite-faces.png';
+		ctx.drawImage(this.image, 0, this.currentFace, 25, 20, this.X, this.Y-screenPosY, 25, 20);
 
 		// body
 		ctx.fillStyle = this.color;
