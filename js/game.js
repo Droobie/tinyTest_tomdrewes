@@ -22,12 +22,19 @@ var	 width = 1024,
 	 mouseDownPos = [];
 	 canv.width;
 	 canv.height;
-
 $(document).ready(function()
 {	
+	//before we do anything, get the data of the current user
 	getUserData();
+	
 });
-
+window.onbeforeunload = function() {
+    saveData();
+    return "asd";
+}
+function saveData() {
+	
+}
 function getUserData() {
 	$.ajax({
 		url: 'php/getData.php',
@@ -99,7 +106,6 @@ function setEvents() {
 	canv.addEventListener('mousedown', onMouseDown);
 	canv.addEventListener('mouseup', onMouseUp);
 	canv.addEventListener('mousemove', onMouseMove);
-	// window.addEventListener('resize', onWindowResize);
 }
 
 function onWindowResize() {
@@ -215,7 +221,6 @@ var Etage = function(name, n) {
 				console.info('this floor is of the type police: ' + this.category);
 				return "blue";
 				break;
-
 			default:
 				return this.color;
 		}
@@ -457,7 +462,7 @@ var EtageButton = function() {
 
 // keeps track of the amount of money the player has
 var MoneyHandler = function(){
-	this.moneyAmount = 100000;
+	this.moneyAmount = parseInt(userData.money);
 	this.draw = function(){
 		ctx.fillStyle = "black";
 		ctx.font = "bold 16px Arial";
