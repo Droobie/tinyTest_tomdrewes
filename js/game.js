@@ -6,18 +6,14 @@ var	 width = 1024,
 	 gLoop,
 	 etageHeight = 75,
 	 totalEtages = 0,
-	 etageCategories = [
-	 					['leisure', ['fitness', 'swimming', 'wellness']],
-	 					['shops', ['clothing', 'shoes', 'electronics']],
-	 					['services', ['cleaning', 'police', 'hospital']],
-	 					['food', ['burgers', 'drinks', 'chinese']]
-	 				   ],
+	 etageCategories = [],
 	 etageArr = [],
 	 etageButton,
 	 elevator,
 	 elevatorWidth = 60,
 	 elevatorButtons = [],
 	 personArr = [],
+	 userData,
 	 money = 1000,
  	 canv = document.getElementById('canv'),
 	 ctx = canv.getContext('2d'),
@@ -29,8 +25,19 @@ var	 width = 1024,
 
 $(document).ready(function()
 {	
-	init();
+	getUserData();
 });
+
+function getUserData() {
+	$.ajax({
+		url: 'php/getData.php',
+		type: "POST",
+		data: {target:'user'}
+	}).done(function(data) {
+		userData = JSON.parse(data);
+		init();
+	});
+}
 
 function init()
 {
@@ -71,7 +78,16 @@ function createLevel() {
 	etageButton = new EtageButton();
 	elevator = new Elevator();
 	elevatorButtons.push(new ElevatorButton(false), new ElevatorButton(true))
-	setEtage();
+	$.ajax({
+		url: 'php/getData.php',
+		type: "POST",
+		data: {target:'etages'}
+	}).done(function(data) {
+		etageCategories = JSON.parse(data);
+		placeAllEtages();
+	});
+
+	//setEtage();
 
 	moneyHandler = new MoneyHandler();
 
@@ -160,18 +176,30 @@ var Background = function() {
 	}
 }
 
-function setEtage() {
+function placeAllEtages() {
+	var arr = userData.etages.split(',');
+	arr.forEach(function(n) {
+		for(var i = 0; i < etageCategories.length; i++) {
+			if(etageCategories[i][0] == n) {
+				setEtage(etageCategories[i][1], n);
+			}
+		}
+	});
+}
+
+function setEtage(name, n) {
 	totalEtages++;
-	etageArr.push(new Etage());
+	etageArr.push(new Etage(name, n));
 	etageButton.setNewPosition();
 }
 
-var Etage = function() {
+var Etage = function(name, n) {
 	this.color = getRandomColor();
 	this.etageNum = totalEtages;
 	this.X = (width/2) - (towerWidth/2);
 	this.Y = height-(this.etageNum*etageHeight);
-	this.category = etageCategories[giveMeRandom(0,3)][1][giveMeRandom(0,2)];
+	this.category = name;
+	//this.category = etageCategories[giveMeRandom(0,3)][1][giveMeRandom(0,2)];
 
 	this.getCorrectImage = function(){
 		switch(this.category){
