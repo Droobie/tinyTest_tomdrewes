@@ -7,6 +7,7 @@ var	 width = 1024,
 	 etageHeight = 75,
 	 totalEtages = 0,
 	 etageCategories = [],
+	 etageTypes = [],
 	 etageArr = [],
 	 etageButton,
 	 elevator,
@@ -30,10 +31,23 @@ $(document).ready(function()
 });
 window.onbeforeunload = function() {
     saveData();
-    return "asd";
+   // return "asd";
 }
 function saveData() {
-
+	//store everything in the database
+	var ids = "";
+	for(var i = 0; i < etageArr.length; i++) {
+		if(i != 0)
+			ids+=",";
+		ids += etageArr[i].etageID;
+	}
+	$.ajax({
+		url: 'php/saveData.php',
+		type: "POST",
+		data: {userid:userData.ID,etages:ids,money:moneyHandler.checkBalance()}
+	}).done(function(data) {
+		
+	});
 }
 function getUserData() {
 	$.ajax({
@@ -80,7 +94,18 @@ var gameLoop = function()
 	moneyHandler.draw();
 }
 
+function getEtageCategories() {
+	$.ajax({
+		url: 'php/getData.php',
+		type: "POST",
+		data: {target:'categories'}
+	}).done(function(data) {
+		etageCategories = JSON.parse(data);
+	});
+}
+
 function createLevel() {
+	getEtageCategories();
 	background = new Background();
 	etageButton = new EtageButton();
 	elevator = new Elevator();
@@ -90,7 +115,7 @@ function createLevel() {
 		type: "POST",
 		data: {target:'etages'}
 	}).done(function(data) {
-		etageCategories = JSON.parse(data);
+		etageTypes = JSON.parse(data);
 		placeAllEtages();
 	});
 
@@ -128,10 +153,39 @@ function onMouseDown(e) {
 	//check if click on new etage button
 	if(oL > etageButton.X && oL < etageButton.X + 150 && oT > etageButton.Y-screenPosY && oT < etageButton.Y+30-screenPosY) {
 		clickFound = true;
-		if(moneyHandler.checkBalance() > 100 * totalEtages) {
-			setEtage();
-			var etageCost = 100 * totalEtages;
-			moneyHandler.changeAmount(-etageCost);
+		etageButton.setEtageMenu();
+	}
+	if(etageButton.isOpen) {
+		//if categoriemenu is opened, check if the click is within the menu area
+		if(oL > (width/2) - (towerWidth/2)+20 && oL < (width/2) - (towerWidth/2)+towerWidth-20 && oT > etageButton.Y-screenPosY+60 && oT < etageButton.Y-screenPosY+460) {
+			var newEtage = null;
+			//if it is, check which button is clicked			
+			for(var i = 0; i < etageCategories.length; i++) {
+				var p = etageButton.Y-screenPosY + 60+(i*45);
+				if(oT > p && oT < p+40) {
+					//if a button is found, check if you got enough money
+					if(moneyHandler.checkBalance() > 100 * totalEtages) {
+						//if you got enough money, get all etage types for this category
+						for(var c = 0; c < etageCategories.length; c++) {
+							if(etageCategories[c][1] == etageCategories[i][1]) {
+								var tA = [];
+								for(var e = 0; e < etageTypes.length; e++) {
+									if(etageTypes[e][2] == etageCategories[c][0]) {
+										tA.push(etageTypes[e]);
+									}
+								}
+								//pick one random
+								var r = (Math.floor(Math.random()*(tA.length-1)))+1;
+								newEtage = tA[r];
+							}
+						}
+					}
+				}
+			}
+		if(newEtage !== null) 
+			moneyHandler.changeAmount(- (100 * totalEtages));
+			etageButton.setEtageMenu();
+			setEtage(newEtage[1], newEtage[0], true);
 		}
 	}
 	elevatorButtons.forEach(function(button) {
@@ -185,27 +239,30 @@ var Background = function() {
 function placeAllEtages() {
 	var arr = userData.etages.split(',');
 	arr.forEach(function(n) {
-		for(var i = 0; i < etageCategories.length; i++) {
-			if(etageCategories[i][0] == n) {
-				setEtage(etageCategories[i][1], n);
+		for(var i = 0; i < etageTypes.length; i++) {
+			if(etageTypes[i][0] == n) {
+				setEtage(etageTypes[i][1], n, false);
 			}
 		}
 	});
 }
 
-function setEtage(name, n) {
+function setEtage(name, n, save) {
 	totalEtages++;
 	etageArr.push(new Etage(name, n));
 	etageButton.setNewPosition();
+	if(save) 
+		saveData();
 }
 
 var Etage = function(name, n) {
 	this.color = getRandomColor();
 	this.etageNum = totalEtages;
+	this.etageID = n;
 	this.X = (width/2) - (towerWidth/2);
 	this.Y = height-(this.etageNum*etageHeight);
 	this.category = name;
-	//this.category = etageCategories[giveMeRandom(0,3)][1][giveMeRandom(0,2)];
+	//this.category = etageTypes[giveMeRandom(0,3)][1][giveMeRandom(0,2)];
 
 	this.getCorrectImage = function(){
 		switch(this.category){
@@ -443,6 +500,7 @@ var ElevatorButton = function(up) {
 var EtageButton = function() {
 	this.X = (width/2) - 75;
 	this.Y = 0;
+	this.isOpen = false;
 	this.draw = function() {
 		// draw button
 		ctx.fillStyle = '#000000';
@@ -455,9 +513,31 @@ var EtageButton = function() {
 		ctx.fillStyle = "white";
 		ctx.font = "bold 16px Arial";
 		ctx.fillText("Needed: "+ 100 * totalEtages, this.X + 30, this.Y-screenPosY + 20);
+		if(this.isOpen) {
+			// draw square
+			ctx.fillStyle = '#333333';
+			ctx.beginPath();
+			ctx.rect((width/2) - (towerWidth/2)+10, this.Y-screenPosY + 50, towerWidth-20, 400);
+			ctx.closePath();
+			ctx.fill();
+			for(var i = 0; i < etageCategories.length; i++) {	
+				// draw button background and text
+				ctx.fillStyle = '#494747';
+				ctx.beginPath();
+				ctx.rect((width/2) - (towerWidth/2)+20, this.Y-screenPosY + 60+(i*45), towerWidth-40, 40);
+				ctx.closePath();
+				ctx.fill();
+				ctx.fillStyle = "white";
+				ctx.font = "bold 16px Arial";
+				ctx.fillText(etageCategories[i][1], (width/2) - (towerWidth/2)+30, this.Y-screenPosY + 85 + (i*45));
+			}
+		}
 	}
 	this.setNewPosition = function() {
 		this.Y = height-(totalEtages*etageHeight)-50;
+	}
+	this.setEtageMenu = function() {
+		this.isOpen = !this.isOpen;
 	}
 }
 

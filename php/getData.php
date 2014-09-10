@@ -8,6 +8,15 @@
 			$e = mysqli_query($db, $q);
 			$a = [];
 			while($etage = mysqli_fetch_object($e)) {
+				array_push($a, [$etage->ID, $etage->name, $etage->catID]);
+			}
+			$output = json_encode($a);
+		break;
+		case "categories":
+			$q = "SELECT * FROM etagecategories";
+			$e = mysqli_query($db, $q);
+			$a = [];
+			while($etage = mysqli_fetch_object($e)) {
 				array_push($a, [$etage->ID, $etage->name]);
 			}
 			$output = json_encode($a);
